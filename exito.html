@@ -16,9 +16,9 @@ button{padding:10px 20px;background:green;color:white;border:none;}
 <button onclick="enviarWhats()">Confirmar pedido por WhatsApp</button>
 
 <script>
-function enviarWhats(){
+window.onload = function(){
   const telefono = "524447948993";
-  const mensaje = "Hola, acabo de realizar un pago en TECSS. ¿Me pueden confirmar mi pedido?";
+  const mensaje = "Hola, ya realicé un pago en TECSS. ¿Me pueden confirmar mi pedido?";
   
   window.location.href = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 }
