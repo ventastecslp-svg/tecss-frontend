@@ -13,6 +13,7 @@ header {
   color:white;
   display:flex;
   justify-content:space-between;
+  align-items:center;
   padding:10px;
 }
 
@@ -33,6 +34,7 @@ input {
   padding:10px;
   border-radius:10px;
   text-align:center;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
 }
 
 button {
@@ -40,6 +42,8 @@ button {
   border:none;
   padding:10px;
   cursor:pointer;
+  margin-top:10px;
+  border-radius:5px;
 }
 </style>
 </head>
@@ -49,7 +53,7 @@ button {
 <header>
   <h2>TECSS</h2>
   <input placeholder="Buscar productos...">
-  <button onclick="verCarrito()">🛒 <span id="count">0</span></button>
+  <button onclick="pagar()">🛒 <span id="count">0</span></button>
 </header>
 
 <div class="grid" id="productos"></div>
@@ -58,21 +62,27 @@ button {
 let carrito = [];
 
 async function cargar() {
-  const res = await fetch("https://tecss-slp.onrender.com/productos");
-  const data = await res.json();
+  try {
+    const res = await fetch("https://tecss-slp.onrender.com/productos");
+    const data = await res.json();
 
-  const cont = document.getElementById("productos");
+    const cont = document.getElementById("productos");
+    cont.innerHTML = "";
 
-  data.forEach(p => {
-    cont.innerHTML += `
-      <div class="card">
-        <img src="${p.imagen}" width="100%">
-        <h3>${p.nombre}</h3>
-        <p>$${p.precio}</p>
-        <button onclick='agregar(${JSON.stringify(p)})'>Comprar</button>
-      </div>
-    `;
-  });
+    data.forEach(p => {
+      cont.innerHTML += `
+        <div class="card">
+          <img src="${p.imagen}" width="100%">
+          <h3>${p.nombre}</h3>
+          <p>$${p.precio}</p>
+          <button onclick='agregar(${JSON.stringify(p)})'>Comprar</button>
+        </div>
+      `;
+    });
+
+  } catch (error) {
+    console.log("Error cargando productos:", error);
+  }
 }
 
 function agregar(p){
@@ -81,12 +91,29 @@ function agregar(p){
 }
 
 async function pagar(){
-  const res = await fetch("https://tecss-slp.onrender.com/pago",{
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ productos: carrito })
-  });
+  if(carrito.length === 0){
+    alert("Agrega productos al carrito");
+    return;
+  }
 
-  const data = await res.json();
-  window.location.href = data.url;
+  try {
+    const res = await fetch("https://tecss-slp.onrender.com/pago",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ productos: carrito })
+    });
+
+    const data = await res.json();
+    window.location.href = data.url;
+
+  } catch (error) {
+    console.log("Error en pago:", error);
+  }
 }
+
+// 🔥 ESTA LÍNEA ES LA CLAVE
+cargar();
+</script>
+
+</body>
+</html>
