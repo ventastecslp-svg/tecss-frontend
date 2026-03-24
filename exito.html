@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Compra exitosa</title>
+<style>
+body{font-family:Arial;text-align:center;padding:50px;}
+button{padding:10px 20px;background:green;color:white;border:none;}
+</style>
+</head>
+
+<body>
+
+<h1>✅ Pago realizado con éxito</h1>
+<p>Gracias por tu compra en TECSS</p>
+
+<button onclick="enviarWhats()">Confirmar pedido por WhatsApp</button>
+
+<script>
+function enviarWhats(){
+  const telefono = "524447948993";
+  const mensaje = "Hola, acabo de realizar un pago en TECSS. ¿Me pueden confirmar mi pedido?";
+  
+  window.location.href = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+}
+</script>
+
+</body>
+</html>
