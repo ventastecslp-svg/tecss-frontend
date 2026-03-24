@@ -96,6 +96,17 @@ async function pagar(){
     return;
   }
 
+  // 📲 MENSAJE WHATSAPP
+  const telefono = "524447948993";
+
+  const mensaje = carrito.map(p => 
+    `${p.nombre} - $${p.precio}`
+  ).join("%0A");
+
+  // Abre WhatsApp con el pedido
+  window.open(`https://wa.me/${telefono}?text=Nuevo pedido:%0A${mensaje}`);
+
+  // 💳 PAGO CON STRIPE
   try {
     const res = await fetch("https://tecss-slp.onrender.com/pago",{
       method:"POST",
@@ -104,6 +115,8 @@ async function pagar(){
     });
 
     const data = await res.json();
+
+    // Redirige a pagar
     window.location.href = data.url;
 
   } catch (error) {
