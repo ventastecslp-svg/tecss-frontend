@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TECSS Tecnología, Seguridad y Servicios</title>
+
+<style>
+body { margin:0; font-family: Arial; background:#f3f3f3; }
+
+header {
+  background:#131921;
+  color:white;
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+}
+
+input {
+  width:40%;
+  padding:8px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+  gap:15px;
+  padding:20px;
+}
+
+.card {
+  background:white;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+}
+
+button {
+  background:#ffd814;
+  border:none;
+  padding:10px;
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>TECSS</h2>
+  <input placeholder="Buscar productos...">
+  <button onclick="verCarrito()">🛒 <span id="count">0</span></button>
+</header>
+
+<div class="grid" id="productos"></div>
+
+<script>
+let carrito = [];
+
+async function cargar() {
+  const res = await fetch("https://tecss-slp.onrender.com/productos");
+  const data = await res.json();
+
+  const cont = document.getElementById("productos");
+
+  data.forEach(p => {
+    cont.innerHTML += `
+      <div class="card">
+        <img src="${p.imagen}" width="100%">
+        <h3>${p.nombre}</h3>
+        <p>$${p.precio}</p>
+        <button onclick='agregar(${JSON.stringify(p)})'>Comprar</button>
+      </div>
+    `;
+  });
+}
+
+function agregar(p){
+  carrito.push(p);
+  document.getElementById("count").innerText = carrito.length;
+}
+
+async function pagar(){
+  const res = await fetch("https://tecss-slp.onrender.com/pago",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ productos: carrito })
+  });
+
+  const data = await res.json();
+  window.location.href = data.url;
+}
