@@ -1,30 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TECSS Tecnología, Seguridad y Servicios</title>
+
+<style>
+body { margin:0; font-family: Arial; background:#f3f3f3; }
+
+header {
+  background:#131921;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px;
+}
+
+header h2 { margin:0; }
+
+input {
+  width:40%;
+  padding:8px;
+  border-radius:5px;
+  border:none;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+  gap:15px;
+  padding:20px;
+}
+
+.card {
+  background:white;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card img {
+  height:180px;
+  object-fit:contain;
+}
+
+button {
+  background:#ffd814;
+  border:none;
+  padding:10px;
+  cursor:pointer;
+  border-radius:5px;
+}
+
+button:hover {
+  background:#f7ca00;
+}
+
+.carrito {
+  position:fixed;
+  right:0;
+  top:0;
+  width:300px;
+  height:100%;
+  background:white;
+  box-shadow:-2px 0 5px rgba(0,0,0,0.2);
+  padding:15px;
+  display:none;
+  overflow:auto;
+}
+
+.item {
+  border-bottom:1px solid #ccc;
+  margin-bottom:10px;
+  padding-bottom:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>TECSS</h2>
+  <input placeholder="Buscar productos..." oninput="buscar(this.value)">
+  <button onclick="verCarrito()">🛒 <span id="count">0</span></button>
+</header>
+
+<div class="grid" id="productos"></div>
+
+<div class="carrito" id="carrito">
+  <h3>Carrito</h3>
+  <div id="lista"></div>
+  <h3>Total: $<span id="total">0</span></h3>
+  <button onclick="pagar()">Pagar</button>
+</div>
+
 <script>
 let carrito = [];
+let productosGlobal = [];
 
+// 🔥 CARGAR PRODUCTOS
 async function cargar() {
-  const res = await fetch("https://tecss-slp.onrender.com/productos");
-  const data = await res.json();
+  try {
+    const res = await fetch("https://tecss-slp.onrender.com/productos");
+    const data = await res.json();
 
+    productosGlobal = data;
+    mostrar(data);
+
+  } catch (error) {
+    console.log("Error cargando productos:", error);
+  }
+}
+
+// 🔥 MOSTRAR PRODUCTOS (CORREGIDO)
+function mostrar(data){
   const cont = document.getElementById("productos");
   cont.innerHTML = "";
 
   data.forEach(p => {
     cont.innerHTML += `
       <div class="card">
-        <img src="${p.imagen}" width="100%">
+        <img src="${p.imagen || 'https://via.placeholder.com/200'}">
         <h3>${p.nombre}</h3>
         <p>$${p.precio}</p>
-        <button onclick='agregar(${JSON.stringify(p)})'>Comprar</button>
+        <button onclick="agregar(${p.id})">Agregar</button>
       </div>
     `;
   });
 }
 
-function agregar(p){
-  carrito.push(p);
-  document.getElementById("count").innerText = carrito.length;
+// 🔍 BUSCADOR
+function buscar(texto){
+  const filtrados = productosGlobal.filter(p =>
+    (p.nombre || "").toLowerCase().includes(texto.toLowerCase())
+  );
+  mostrar(filtrados);
 }
 
-// 🔥 ESTA LÍNEA ES LA CLAVE
+// 🛒 AGREGAR (CORREGIDO)
+function agregar(id){
+  const p = productosGlobal.find(x => x.id == id);
+  if(!p) return;
+  carrito.push(p);
+  actualizarCarrito();
+}
+
+// 🔄 ACTUALIZAR CARRITO
+function actualizarCarrito(){
+  document.getElementById("count").innerText = carrito.length;
+
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  let total = 0;
+
+  carrito.forEach(p => {
+    total += p.precio;
+
+    lista.innerHTML += `
+      <div class="item">
+        <p>${p.nombre}</p>
+        <p>$${p.precio}</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("total").innerText = total;
+}
+
+// 👀 VER CARRITO
+function verCarrito(){
+  const panel = document.getElementById("carrito");
+  panel.style.display = panel.style.display === "block" ? "none" : "block";
+}
+
+// 💳 PAGAR
+async function pagar(){
+  const res = await fetch("https://tecss-slp.onrender.com/pago",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ productos: carrito })
+  });
+
+  const data = await res.json();
+  window.location.href = data.url;
+}
+
+// 🚀 INICIAR
 cargar();
 </script>
+
+</body>
+</html>
